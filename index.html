@@ -38,7 +38,9 @@ td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals
 
 /* Mobile app shell */
 .mobile-nav{display:none}.install-banner{display:none;position:sticky;top:8px;z-index:20;background:#111827;color:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;align-items:center;justify-content:space-between;gap:10px}.install-banner button{background:white;color:#111827;padding:8px 10px}.offline-badge{font-size:12px;font-weight:700;padding:5px 8px;border-radius:999px;background:#fee2e2;color:#991b1b;display:none}
-@media(max-width:800px){body{background:#f3f4f6;padding-bottom:84px}.app{padding:calc(12px + env(safe-area-inset-top)) 10px 16px}header{position:sticky;top:0;z-index:10;background:#f3f4f6;padding:8px 2px 10px;margin-bottom:8px}header h1{font-size:22px}header .secondary{padding:9px 11px}.tabs{display:none}.card{padding:14px;border-radius:16px}.grid{gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions button{min-height:44px}.ai-box .actions{grid-template-columns:1fr}.inventory-grid{display:block}.stock-card{margin-bottom:12px;overflow-x:auto}table{min-width:620px}.stock-card table{min-width:560px}.totals{max-width:none}.total{font-size:22px}.mobile-nav{display:grid;grid-template-columns:1fr 1fr;position:fixed;left:0;right:0;bottom:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e5e7eb;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:8px}.mobile-nav button{background:transparent;color:#6b7280;padding:8px}.mobile-nav button.active{background:#111827;color:#fff}.mobile-nav span{display:block;font-size:20px;line-height:20px;margin-bottom:3px}.mobile-nav small{font-size:11px}.install-banner{display:flex}}
+@media(max-width:800px){body{background:#f3f4f6;padding-bottom:84px}.app{padding:calc(12px + env(safe-area-inset-top)) 10px 16px}header{position:sticky;top:0;z-index:10;background:#f3f4f6;padding:8px 2px 10px;margin-bottom:8px}header h1{font-size:22px}header .secondary{padding:9px 11px}.tabs{display:none}.card{padding:14px;border-radius:16px}.grid{gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions button{min-height:44px}.ai-box .actions{grid-template-columns:1fr}.inventory-grid{display:block}.stock-card{margin-bottom:12px;overflow-x:auto}table{min-width:620px}.stock-card table{min-width:560px}.totals{max-width:none}.total{font-size:22px}.mobile-nav{display:grid;grid-template-columns:repeat(3,1fr);position:fixed;left:0;right:0;bottom:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e5e7eb;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:8px}.mobile-nav button{background:transparent;color:#6b7280;padding:8px}.mobile-nav button.active{background:#111827;color:#fff}.mobile-nav span{display:block;font-size:20px;line-height:20px;margin-bottom:3px}.mobile-nav small{font-size:11px}.install-banner{display:flex}}
+
+.project-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:16px}.project-toolbar{display:flex;gap:8px;flex-wrap:wrap}.piece-table{overflow-x:auto}.piece-table table{min-width:760px}.project-summary{padding:12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;margin-top:12px;line-height:1.55}.photo-preview{display:none;width:100%;max-height:280px;object-fit:contain;border-radius:12px;margin-top:10px;background:#f3f4f6}.voice-live{animation:pulse 1s infinite;background:#fee2e2!important;color:#991b1b!important}@keyframes pulse{50%{opacity:.65}}.project-card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-top:8px}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#e0e7ff;color:#3730a3;font-size:11px;font-weight:750}@media(max-width:800px){.project-grid{grid-template-columns:1fr}.piece-table table{min-width:720px}}
 </style>
 </head>
 <body>
@@ -49,7 +51,7 @@ td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals
   <button class="secondary" onclick="newQuote()">Nuovo preventivo</button>
 </header>
 
-<div class="tabs"><button class="tab active" id="tabQuote" onclick="showView('quoteView')">Preventivo</button><button class="tab" id="tabWarehouse" onclick="showView('warehouseView')">Magazzino & Listino</button></div>
+<div class="tabs"><button class="tab active" id="tabQuote" onclick="showView('quoteView')">Preventivo</button><button class="tab" id="tabProject" onclick="showView('projectView')">✨ Progetta AI</button><button class="tab" id="tabWarehouse" onclick="showView('warehouseView')">Magazzino & Listino</button></div>
 <div id="quoteView">
 <div class="grid">
 <section class="card">
@@ -128,6 +130,22 @@ td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals
 </div>
 </div>
 
+<div id="projectView" style="display:none">
+<section class="card">
+<h2>✨ Progetta con AI</h2><div class="muted">Descrivi o detta il mobile. PreventivoPro crea una distinta pezzi estimativa, ferramenta e bordatura modificabili prima del preventivo.</div>
+<div class="project-grid" style="margin-top:14px"><div>
+<label>Descrizione del mobile</label><textarea id="projectDescription" placeholder="Es. Armadio 240x260x60 cm, 4 ante, 6 ripiani, 4 cassetti, nobilitato bianco 18 mm..."></textarea>
+<div class="project-toolbar"><button class="ai-btn" onclick="generateProject()">✨ Genera progetto</button><button class="secondary" id="voiceBtn" onclick="toggleVoice()">🎙️ Detta</button></div>
+<h3>📸 Da foto</h3><div class="muted">Scatta/carica una foto e indica almeno una misura reale. In questa versione la foto resta allegata al progetto; la distinta viene calcolata dalla descrizione e dalla misura inserita.</div>
+<input id="projectPhoto" type="file" accept="image/*" capture="environment" onchange="previewProjectPhoto(event)"><img id="photoPreview" class="photo-preview" alt="Foto progetto">
+<div class="row"><div><label>Misura di riferimento (cm)</label><input id="referenceMeasure" type="number" placeholder="es. 120"></div><div><label>Nota misura</label><input id="referenceNote" placeholder="es. larghezza totale"></div></div>
+<div id="projectSummary" class="project-summary" style="display:none"></div>
+</div><div>
+<h3>Distinta pezzi</h3><div class="piece-table"><table><thead><tr><th>Pezzo</th><th>Q.tà</th><th>L mm</th><th>H mm</th><th>Sp.</th><th>Bordi m</th><th></th></tr></thead><tbody id="projectPieces"></tbody></table></div>
+<div class="actions"><button class="secondary" onclick="addProjectPiece()">+ Pezzo</button><button class="primary" onclick="projectToQuote()">→ Crea preventivo</button><button class="secondary" onclick="saveProject()">Salva progetto</button></div>
+<h3>Progetti salvati</h3><div id="projectArchive" class="muted">Nessun progetto salvato.</div>
+</div></div></section></div>
+
 <div id="warehouseView" style="display:none">
 <section class="card">
 <h2>Magazzino & Listino</h2><div class="muted">Prezzi base indicativi, modificabili. Le quantità e i prezzi personalizzati restano salvati sul dispositivo.</div>
@@ -140,7 +158,7 @@ td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals
 <div class="log-box"><strong>Ultimo movimento magazzino</strong><div id="warehouseLog" style="margin-top:6px">Nessuno scarico registrato.</div></div>
 <p class="muted" style="margin-top:16px">Listino iniziale: valori indicativi ricavati da prezzi retail online italiani consultati a ottobre 2026. Formato, qualità, marca, quantità, IVA e trasporto possono cambiare sensibilmente il costo reale.</p>
 </section></div>
-<nav class="mobile-nav"><button id="mobileQuote" class="active" onclick="showView('quoteView')"><span>🧾</span><small>Preventivo</small></button><button id="mobileWarehouse" onclick="showView('warehouseView')"><span>📦</span><small>Magazzino</small></button></nav>
+<nav class="mobile-nav"><button id="navQuote" class="active" onclick="showView('quoteView')"><span>🧾</span><small>Preventivo</small></button><button id="navProject" onclick="showView('projectView')"><span>✨</span><small>Progetta</small></button><button id="navWarehouse" onclick="showView('warehouseView')"><span>📦</span><small>Magazzino</small></button></nav>
 
 <script>
 const eur = n => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
@@ -543,9 +561,30 @@ function loadLast(){
  number.value=d.number||'';date.value=d.date||'';description.value=d.description||'';vat.value=d.vat||22;document.getElementById('markup').value=d.markup??30;
  items=d.items||[]; materials=d.materials||[]; edges=d.edges||[]; hardware=d.hardware||[]; quoteAccepted=!!d.quoteAccepted; inventoryUnloaded=!!d.inventoryUnloaded; setQuoteStatus(); renderMaterials(); renderEdges(); renderHardware(); renderItems();
 }
+let projectPieces=[];let currentProjectMeta={};let voiceRecognition=null;
+function furniturePiecesFromText(text){
+ const bom=inferFurnitureBOM(text),d=bom.dims;if(!d)return {bom,pieces:[]};
+ const W=Math.round(d.w*10),H=Math.round(d.h*10),D=Math.round(d.d*10),T=18; const innerW=Math.max(1,W-2*T);let p=[];
+ p.push({name:'Fianco',qty:2,l:H,h:D,t:T,edge:H/1000});p.push({name:'Top / Fondo',qty:2,l:innerW,h:D,t:T,edge:innerW/1000});
+ if(bom.shelves)p.push({name:'Ripiano',qty:bom.shelves,l:innerW,h:Math.max(1,D-5),t:T,edge:innerW/1000});
+ if(bom.doors){const gap=3,doorW=Math.max(1,Math.floor((W-gap*(bom.doors+1))/bom.doors));p.push({name:'Anta',qty:bom.doors,l:H-gap*2,h:doorW,t:T,edge:2*((H-gap*2)+doorW)/1000})}
+ if(bom.drawers){const fh=Math.max(120,Math.min(300,Math.floor(H/(bom.drawers+2))));p.push({name:'Frontale cassetto',qty:bom.drawers,l:innerW,h:fh,t:T,edge:2*(innerW+fh)/1000});p.push({name:'Fondo cassetto',qty:bom.drawers,l:Math.max(1,innerW-30),h:Math.max(1,D-50),t:T,edge:0});p.push({name:'Sponda cassetto',qty:bom.drawers*2,l:Math.max(1,D-50),h:120,t:T,edge:(D-50)/1000})}
+ p.push({name:'Schienale',qty:1,l:Math.max(1,H-4),h:Math.max(1,W-4),t:4,edge:0});return {bom,pieces:p}
+}
+function generateProject(){const text=projectDescription.value.trim();if(!text){alert('Descrivi prima il mobile.');return}const r=furniturePiecesFromText(text);projectPieces=r.pieces;currentProjectMeta={description:text,bom:r.bom,referenceMeasure:referenceMeasure.value,referenceNote:referenceNote.value,created:new Date().toISOString()};renderProjectPieces();const b=r.bom;projectSummary.style.display='block';projectSummary.innerHTML=`<strong>Progetto estimativo</strong><br>Dimensioni: ${b.dims?`${b.dims.w}×${b.dims.h}×${b.dims.d} cm`:'da specificare'} · Ante: ${b.doors} · Cassetti: ${b.drawers} · Ripiani: ${b.shelves}<br>Ferramenta stimata: ${b.hinges} cerniere, ${b.guides} coppie guide, ${b.handles} maniglie, ${b.shelves*4} reggipiani.<br><span class="muted">Verifica sempre misure, giochi, giunzioni e ferramenta prima della produzione.</span>`}
+function renderProjectPieces(){projectPieces.innerHTML='';const tb=document.getElementById('projectPieces');projectPieces.forEach((x,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td><input value="${escapeHtml(x.name)}" oninput="projectPieces[${i}].name=this.value"></td><td><input type="number" value="${x.qty}" oninput="projectPieces[${i}].qty=+this.value||0"></td><td><input type="number" value="${x.l}" oninput="projectPieces[${i}].l=+this.value||0"></td><td><input type="number" value="${x.h}" oninput="projectPieces[${i}].h=+this.value||0"></td><td><input type="number" value="${x.t}" oninput="projectPieces[${i}].t=+this.value||0"></td><td><input type="number" step=".01" value="${(+x.edge||0).toFixed(2)}" oninput="projectPieces[${i}].edge=+this.value||0"></td><td><button class="danger small" onclick="projectPieces.splice(${i},1);renderProjectPieces()">×</button></td>`;tb.appendChild(tr)})}
+function addProjectPiece(){projectPieces.push({name:'Nuovo pezzo',qty:1,l:0,h:0,t:18,edge:0});renderProjectPieces()}
+function projectToQuote(){if(!currentProjectMeta.bom)generateProject();const b=currentProjectMeta.bom;if(!b)return;description.value=projectDescription.value;runSmartFurnitureAI();const area=projectPieces.filter(x=>x.t>4).reduce((a,x)=>a+x.qty*x.l*x.h/1e6,0)*1.12;const back=projectPieces.filter(x=>x.t<=4).reduce((a,x)=>a+x.qty*x.l*x.h/1e6,0)*1.08;const edge=projectPieces.reduce((a,x)=>a+x.qty*(+x.edge||0),0);if(materials[0])materials[0].qty=+area.toFixed(2);const sb=materials.find(x=>/schienale/i.test(x.desc));if(sb)sb.qty=+back.toFixed(2);if(edges[0])edges[0].qty=+edge.toFixed(2);applyCatalogPrices();showView('quoteView');renderMaterials();renderEdges();renderHardware();renderItems();alert('Progetto trasferito al preventivo. Controlla le voci prima di confermare.')}
+function saveProject(){if(!currentProjectMeta.description){generateProject();if(!currentProjectMeta.description)return}const arr=JSON.parse(localStorage.getItem('preventivopro_projects')||'[]');arr.unshift({...currentProjectMeta,pieces:projectPieces.slice(),id:Date.now()});localStorage.setItem('preventivopro_projects',JSON.stringify(arr.slice(0,30)));renderProjectArchive();alert('Progetto salvato sul dispositivo.')}
+function renderProjectArchive(){const el=document.getElementById('projectArchive');if(!el)return;const arr=JSON.parse(localStorage.getItem('preventivopro_projects')||'[]');el.innerHTML=arr.length?arr.slice(0,8).map((p,i)=>`<div class="project-card"><span class="badge">${new Date(p.created).toLocaleDateString('it-IT')}</span> ${escapeHtml(p.description.slice(0,90))}<div class="actions"><button class="secondary small" onclick="loadProject(${i})">Apri</button></div></div>`).join(''):'Nessun progetto salvato.'}
+function loadProject(i){const arr=JSON.parse(localStorage.getItem('preventivopro_projects')||'[]'),p=arr[i];if(!p)return;currentProjectMeta=p;projectPieces=p.pieces||[];projectDescription.value=p.description||'';referenceMeasure.value=p.referenceMeasure||'';referenceNote.value=p.referenceNote||'';renderProjectPieces();projectSummary.style.display='block';projectSummary.innerHTML='<strong>Progetto caricato.</strong> Puoi modificare la distinta o trasferirla al preventivo.'}
+function previewProjectPhoto(e){const f=e.target.files?.[0];if(!f)return;const img=document.getElementById('photoPreview');img.src=URL.createObjectURL(f);img.style.display='block'}
+function toggleVoice(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('Il riconoscimento vocale diretto non è disponibile qui. Su iPhone puoi usare il microfono della tastiera nel campo descrizione.');projectDescription.focus();return}if(voiceRecognition){voiceRecognition.stop();return}voiceRecognition=new SR();voiceRecognition.lang='it-IT';voiceRecognition.continuous=true;voiceRecognition.interimResults=true;let base=projectDescription.value;voiceBtn.classList.add('voice-live');voiceBtn.textContent='⏹ Ferma';voiceRecognition.onresult=e=>{let txt='';for(let i=e.resultIndex;i<e.results.length;i++)txt+=e.results[i][0].transcript+' ';projectDescription.value=(base+' '+txt).trim()};voiceRecognition.onend=()=>{voiceRecognition=null;voiceBtn.classList.remove('voice-live');voiceBtn.textContent='🎙️ Detta'};voiceRecognition.start()}
+
 renderCatalog();
 renderWarehouseLog();
 newQuote();
+renderProjectArchive();
 
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;document.getElementById('installBanner').style.display='flex'});
