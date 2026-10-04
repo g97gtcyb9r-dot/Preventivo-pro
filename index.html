@@ -47,7 +47,7 @@ td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals
 <div class="app">
 <div id="installBanner" class="install-banner"><div><strong>Installa PreventivoPro</strong><div style="font-size:12px;opacity:.8">Usala come una vera app sul telefono.</div></div><button id="installBtn">Installa</button></div>
 <header>
-  <div><h1>PreventivoPro</h1><div class="muted">MVP — preventivi semplici e veloci</div></div>
+  <div><h1>PreventivoPro</h1><div class="muted">App mobile • versione 6 • ricarico verificabile</div></div>
   <button class="secondary" onclick="newQuote()">Nuovo preventivo</button>
 </header>
 
@@ -121,7 +121,7 @@ td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals
 <div><span>Bordatura</span><strong id="edgeTotal">€ 0,00</strong></div>
 <div><span>Ferramenta</span><strong id="hardwareTotal">€ 0,00</strong></div>
 <div><span>Lavorazioni</span><strong id="workTotal">€ 0,00</strong></div>
-<div><span>Costo interno</span><strong id="subtotal">€ 0,00</strong></div><div><span>Prezzo vendita</span><strong id="saleSubtotal">€ 0,00</strong></div>
+<div><span>Costo interno</span><strong id="subtotal">€ 0,00</strong></div><div><span id="markupLabel">Ricarico (30%)</span><strong id="markupTotal">€ 0,00</strong></div><div><span>Prezzo vendita</span><strong id="saleSubtotal">€ 0,00</strong></div>
 <div><span>IVA</span><strong id="vatamount">€ 0,00</strong></div>
 <div class="total"><span>TOTALE</span><span id="grandtotal">€ 0,00</span></div>
 </div>
@@ -177,7 +177,7 @@ const defaultCatalog={
  hardware:[{name:'Cerniera ammortizzata Ø35',stock:24,unit:'pz',price:2.50},{name:'Cerniera standard Ø35',stock:0,unit:'pz',price:1.50},{name:'Guide cassetto',stock:8,unit:'coppia',price:12.00},{name:'Maniglia',stock:20,unit:'pz',price:3.00},{name:'Piedino regolabile',stock:16,unit:'pz',price:1.50},{name:'Reggipiano',stock:40,unit:'pz',price:0.20}]
 };
 let catalog=JSON.parse(localStorage.getItem('preventivopro_catalog')||'null')||JSON.parse(JSON.stringify(defaultCatalog));
-function showView(v){document.getElementById('mobileQuote')?.classList.toggle('active',v==='quoteView');document.getElementById('mobileWarehouse')?.classList.toggle('active',v==='warehouseView');document.getElementById('quoteView').style.display=v==='quoteView'?'block':'none';document.getElementById('warehouseView').style.display=v==='warehouseView'?'block':'none';document.getElementById('tabQuote').classList.toggle('active',v==='quoteView');document.getElementById('tabWarehouse').classList.toggle('active',v==='warehouseView');if(v==='warehouseView')renderCatalog()}
+function showView(v){['quoteView','projectView','warehouseView'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=id===v?'block':'none'});document.getElementById('tabQuote')?.classList.toggle('active',v==='quoteView');document.getElementById('tabProject')?.classList.toggle('active',v==='projectView');document.getElementById('tabWarehouse')?.classList.toggle('active',v==='warehouseView');document.getElementById('navQuote')?.classList.toggle('active',v==='quoteView');document.getElementById('navProject')?.classList.toggle('active',v==='projectView');document.getElementById('navWarehouse')?.classList.toggle('active',v==='warehouseView');if(v==='warehouseView')renderCatalog();if(v==='projectView')renderProjectArchive()}
 function renderCatalog(){
  const rows=(arr,type)=>arr.map((x,i)=>`<tr><td><input value="${escapeHtml(x.name)}" oninput="catalog.${type}[${i}].name=this.value"></td><td><input type="number" min="0" step="0.01" value="${x.stock}" oninput="catalog.${type}[${i}].stock=parseFloat(this.value)||0"></td>${type==='materials'?`<td><input value="${escapeHtml(x.unit)}" oninput="catalog.${type}[${i}].unit=this.value"></td>`:''}<td><input type="number" min="0" step="0.01" value="${x.price}" oninput="catalog.${type}[${i}].price=parseFloat(this.value)||0"></td><td><button class="danger small" onclick="catalog.${type}.splice(${i},1);renderCatalog()">×</button></td></tr>`).join('');
  catalogMaterials.innerHTML=rows(catalog.materials,'materials');catalogEdges.innerHTML=rows(catalog.edges,'edges');catalogHardware.innerHTML=rows(catalog.hardware,'hardware');
@@ -433,16 +433,22 @@ function calc(){
  let wt=items.reduce((a,x)=>a+(x.qty||0)*(x.price||0),0);
  let sub=mt+et+ht+wt;
  let markupv=parseFloat(document.getElementById('markup')?.value)||0;
-  let saleSub=sub*(1+markupv/100);
-  let profit=saleSub-sub;
+  let markupAmount=sub*(markupv/100);
+  let saleSub=sub+markupAmount;
+  let profit=markupAmount;
   let vatv=saleSub*(parseFloat(document.getElementById('vat').value)||0)/100;
  document.getElementById('materialTotal').textContent=eur(mt);
  document.getElementById('edgeTotal').textContent=eur(et);
  document.getElementById('hardwareTotal').textContent=eur(ht);
  document.getElementById('workTotal').textContent=eur(wt);
  document.getElementById('subtotal').textContent=eur(sub);
+ document.getElementById('markupLabel').textContent='Ricarico ('+markupv.toLocaleString('it-IT')+'%)';
+ document.getElementById('markupTotal').textContent=eur(markupAmount);
+ document.getElementById('saleSubtotal').textContent=eur(saleSub);
+ document.getElementById('profitTotal').textContent=eur(profit);
+ document.getElementById('marginPct').textContent=(saleSub>0?((profit/saleSub)*100):0).toFixed(1).replace('.',',')+'%';
  document.getElementById('vatamount').textContent=eur(vatv);
- document.getElementById('grandtotal').textContent=eur(sub+vatv);
+ document.getElementById('grandtotal').textContent=eur(saleSub+vatv);
  materials.forEach((x,i)=>{let e=document.getElementById('mat'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
  edges.forEach((x,i)=>{let e=document.getElementById('edge'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
  hardware.forEach((x,i)=>{let e=document.getElementById('hard'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
@@ -572,7 +578,7 @@ function furniturePiecesFromText(text){
  p.push({name:'Schienale',qty:1,l:Math.max(1,H-4),h:Math.max(1,W-4),t:4,edge:0});return {bom,pieces:p}
 }
 function generateProject(){const text=projectDescription.value.trim();if(!text){alert('Descrivi prima il mobile.');return}const r=furniturePiecesFromText(text);projectPieces=r.pieces;currentProjectMeta={description:text,bom:r.bom,referenceMeasure:referenceMeasure.value,referenceNote:referenceNote.value,created:new Date().toISOString()};renderProjectPieces();const b=r.bom;projectSummary.style.display='block';projectSummary.innerHTML=`<strong>Progetto estimativo</strong><br>Dimensioni: ${b.dims?`${b.dims.w}×${b.dims.h}×${b.dims.d} cm`:'da specificare'} · Ante: ${b.doors} · Cassetti: ${b.drawers} · Ripiani: ${b.shelves}<br>Ferramenta stimata: ${b.hinges} cerniere, ${b.guides} coppie guide, ${b.handles} maniglie, ${b.shelves*4} reggipiani.<br><span class="muted">Verifica sempre misure, giochi, giunzioni e ferramenta prima della produzione.</span>`}
-function renderProjectPieces(){projectPieces.innerHTML='';const tb=document.getElementById('projectPieces');projectPieces.forEach((x,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td><input value="${escapeHtml(x.name)}" oninput="projectPieces[${i}].name=this.value"></td><td><input type="number" value="${x.qty}" oninput="projectPieces[${i}].qty=+this.value||0"></td><td><input type="number" value="${x.l}" oninput="projectPieces[${i}].l=+this.value||0"></td><td><input type="number" value="${x.h}" oninput="projectPieces[${i}].h=+this.value||0"></td><td><input type="number" value="${x.t}" oninput="projectPieces[${i}].t=+this.value||0"></td><td><input type="number" step=".01" value="${(+x.edge||0).toFixed(2)}" oninput="projectPieces[${i}].edge=+this.value||0"></td><td><button class="danger small" onclick="projectPieces.splice(${i},1);renderProjectPieces()">×</button></td>`;tb.appendChild(tr)})}
+function renderProjectPieces(){const tb=document.getElementById('projectPieces');if(!tb)return;tb.innerHTML='';projectPieces.forEach((x,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td><input value="${escapeHtml(x.name)}" oninput="projectPieces[${i}].name=this.value"></td><td><input type="number" value="${x.qty}" oninput="projectPieces[${i}].qty=+this.value||0"></td><td><input type="number" value="${x.l}" oninput="projectPieces[${i}].l=+this.value||0"></td><td><input type="number" value="${x.h}" oninput="projectPieces[${i}].h=+this.value||0"></td><td><input type="number" value="${x.t}" oninput="projectPieces[${i}].t=+this.value||0"></td><td><input type="number" step=".01" value="${(+x.edge||0).toFixed(2)}" oninput="projectPieces[${i}].edge=+this.value||0"></td><td><button class="danger small" onclick="projectPieces.splice(${i},1);renderProjectPieces()">×</button></td>`;tb.appendChild(tr)})}
 function addProjectPiece(){projectPieces.push({name:'Nuovo pezzo',qty:1,l:0,h:0,t:18,edge:0});renderProjectPieces()}
 function projectToQuote(){if(!currentProjectMeta.bom)generateProject();const b=currentProjectMeta.bom;if(!b)return;description.value=projectDescription.value;runSmartFurnitureAI();const area=projectPieces.filter(x=>x.t>4).reduce((a,x)=>a+x.qty*x.l*x.h/1e6,0)*1.12;const back=projectPieces.filter(x=>x.t<=4).reduce((a,x)=>a+x.qty*x.l*x.h/1e6,0)*1.08;const edge=projectPieces.reduce((a,x)=>a+x.qty*(+x.edge||0),0);if(materials[0])materials[0].qty=+area.toFixed(2);const sb=materials.find(x=>/schienale/i.test(x.desc));if(sb)sb.qty=+back.toFixed(2);if(edges[0])edges[0].qty=+edge.toFixed(2);applyCatalogPrices();showView('quoteView');renderMaterials();renderEdges();renderHardware();renderItems();alert('Progetto trasferito al preventivo. Controlla le voci prima di confermare.')}
 function saveProject(){if(!currentProjectMeta.description){generateProject();if(!currentProjectMeta.description)return}const arr=JSON.parse(localStorage.getItem('preventivopro_projects')||'[]');arr.unshift({...currentProjectMeta,pieces:projectPieces.slice(),id:Date.now()});localStorage.setItem('preventivopro_projects',JSON.stringify(arr.slice(0,30)));renderProjectArchive();alert('Progetto salvato sul dispositivo.')}
