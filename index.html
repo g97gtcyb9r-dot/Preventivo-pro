@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PreventivoPro">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PreventivoPro — MVP</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#17202a;background:#f4f6f8}
+*{box-sizing:border-box}body{margin:0}.app{max-width:1180px;margin:auto;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+h1{margin:0;font-size:25px} .muted{color:#6b7280;font-size:14px}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer}
+.primary{background:#111827;color:white}.secondary{background:white;border:1px solid #d7dce2}
+.grid{display:grid;grid-template-columns:1fr 1.5fr;gap:18px}
+.card{background:white;border:1px solid #e2e6ea;border-radius:14px;padding:18px;box-shadow:0 2px 10px #00000008}
+label{display:block;font-size:13px;font-weight:650;margin:10px 0 5px}
+input,textarea,select{width:100%;padding:10px;border:1px solid #d7dce2;border-radius:8px;font:inherit}
+textarea{min-height:72px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+table{width:100%;border-collapse:collapse;margin-top:10px}th,td{text-align:left;padding:9px 5px;border-bottom:1px solid #edf0f2;font-size:14px}
+td input{padding:7px;min-width:70px} h3{font-size:16px;margin-bottom:6px}.totals{margin-top:18px;margin-left:auto;max-width:310px}.totals div{display:flex;justify-content:space-between;padding:5px}.total{font-size:20px;font-weight:800;border-top:2px solid #111827;margin-top:7px;padding-top:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.danger{color:#b42318;background:#fff1f0}.ai-box{margin-top:14px;padding:14px;border:1px solid #cfd7e3;border-radius:12px;background:#f8fafc}.ai-box strong{display:block;margin-bottom:5px}.ai-status{font-size:13px;color:#667085;margin-top:8px}.ai-btn{background:#4f46e5;color:white}.tabs{display:flex;gap:8px;margin-bottom:18px}.tab{background:#e9edf2}.tab.active{background:#111827;color:white}.inventory-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stock-card{border:1px solid #e2e6ea;border-radius:12px;padding:12px}.stock-card h4{margin:0 0 8px}.stock-low{color:#b42318;font-weight:700}.catalog-actions{display:flex;gap:6px}.small{padding:6px 9px;font-size:12px}
+.statusbar{margin-top:14px;padding:12px;border:1px solid #d7dce2;border-radius:10px;background:#f8fafc}
+.status-pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750;background:#eef2f7}
+.status-pill.accepted{background:#dcfce7;color:#166534}
+.accept-btn{background:#15803d;color:white}
+.warning-box{margin-top:10px;padding:10px;border-radius:9px;background:#fff7ed;color:#9a3412;font-size:13px;display:none}
+.log-box{margin-top:12px;padding:12px;border:1px dashed #cbd5e1;border-radius:10px;background:#fafafa;font-size:13px;white-space:pre-line}@media(max-width:900px){.inventory-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.app{padding:12px}header{align-items:flex-start;gap:10px}.row{grid-template-columns:1fr}}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.kpi{padding:12px;border:1px solid #e2e6ea;border-radius:10px;background:#fff}.kpi span{display:block;font-size:12px;color:#6b7280}.kpi strong{font-size:18px}.smart-bom{display:none;margin-top:12px;padding:12px;border-radius:10px;background:#eef2ff;border:1px solid #c7d2fe;font-size:13px;line-height:1.55}.profit-box{margin-top:16px;padding:14px;border:1px solid #d7dce2;border-radius:12px;background:#f8fafc}.profit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.profit-grid label{margin-top:0}@media(max-width:800px){.kpi-grid,.profit-grid{grid-template-columns:1fr}}
+@media print{.tabs,.actions,.ai-box,#warehouseView,.danger{display:none!important}.app{max-width:none;padding:0}.card{box-shadow:none;border:0}.grid{display:block}.grid .card{margin-bottom:12px}}
+
+/* Mobile app shell */
+.mobile-nav{display:none}.install-banner{display:none;position:sticky;top:8px;z-index:20;background:#111827;color:white;padding:12px 14px;border-radius:14px;margin-bottom:12px;align-items:center;justify-content:space-between;gap:10px}.install-banner button{background:white;color:#111827;padding:8px 10px}.offline-badge{font-size:12px;font-weight:700;padding:5px 8px;border-radius:999px;background:#fee2e2;color:#991b1b;display:none}
+@media(max-width:800px){body{background:#f3f4f6;padding-bottom:84px}.app{padding:calc(12px + env(safe-area-inset-top)) 10px 16px}header{position:sticky;top:0;z-index:10;background:#f3f4f6;padding:8px 2px 10px;margin-bottom:8px}header h1{font-size:22px}header .secondary{padding:9px 11px}.tabs{display:none}.card{padding:14px;border-radius:16px}.grid{gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr}.actions button{min-height:44px}.ai-box .actions{grid-template-columns:1fr}.inventory-grid{display:block}.stock-card{margin-bottom:12px;overflow-x:auto}table{min-width:620px}.stock-card table{min-width:560px}.totals{max-width:none}.total{font-size:22px}.mobile-nav{display:grid;grid-template-columns:1fr 1fr;position:fixed;left:0;right:0;bottom:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e5e7eb;padding:8px 12px calc(8px + env(safe-area-inset-bottom));gap:8px}.mobile-nav button{background:transparent;color:#6b7280;padding:8px}.mobile-nav button.active{background:#111827;color:#fff}.mobile-nav span{display:block;font-size:20px;line-height:20px;margin-bottom:3px}.mobile-nav small{font-size:11px}.install-banner{display:flex}}
+</style>
+</head>
+<body>
+<div class="app">
+<div id="installBanner" class="install-banner"><div><strong>Installa PreventivoPro</strong><div style="font-size:12px;opacity:.8">Usala come una vera app sul telefono.</div></div><button id="installBtn">Installa</button></div>
+<header>
+  <div><h1>PreventivoPro</h1><div class="muted">MVP — preventivi semplici e veloci</div></div>
+  <button class="secondary" onclick="newQuote()">Nuovo preventivo</button>
+</header>
+
+<div class="tabs"><button class="tab active" id="tabQuote" onclick="showView('quoteView')">Preventivo</button><button class="tab" id="tabWarehouse" onclick="showView('warehouseView')">Magazzino & Listino</button></div>
+<div id="quoteView">
+<div class="grid">
+<section class="card">
+<h2>Cliente</h2>
+<div class="row"><div><label>Nome / Azienda</label><input id="client"></div><div><label>Telefono</label><input id="phone"></div></div>
+<label>Email</label><input id="email" type="email">
+<label>Indirizzo</label><input id="address">
+<h2 style="margin-top:22px">Preventivo</h2>
+<div class="row"><div><label>Numero</label><input id="number"></div><div><label>Data</label><input id="date" type="date"></div></div>
+<label>Descrizione del lavoro</label><textarea id="description" placeholder="Descrizione generale del lavoro..."></textarea>
+<div class="ai-box">
+<strong>✨ Assistente preventivo AI</strong>
+<div class="muted">Scrivi sopra cosa devi realizzare: l’assistente propone materiali, bordi, ferramenta e lavorazioni. I valori restano sempre modificabili.</div>
+<div class="actions"><button class="ai-btn" onclick="aiCompleteQuote()">✨ Genera voci dal testo</button><button class="secondary" onclick="clearGenerated()">Svuota voci</button></div>
+<div class="ai-status" id="aiStatus">Pronto.</div>
+</div>
+<div id="smartBom" class="smart-bom"></div>
+<label>IVA</label><select id="vat"><option value="22">22%</option><option value="10">10%</option><option value="0">0%</option></select>
+<div class="actions">
+<button class="primary" onclick="saveQuote()">Salva</button>
+<button class="secondary" onclick="loadLast()">Carica ultimo</button>
+<button class="secondary" onclick="window.print()">Stampa / PDF</button>
+<button class="accept-btn" onclick="acceptAndUnload()">✓ Accetta & scarica magazzino</button>
+<button class="secondary" onclick="loadSimulation()">▶ Carica simulazione</button>
+<button class="secondary" onclick="loadSmartSimulation()">🧠 Simulazione AI da sola descrizione</button>
+</div>
+<div class="statusbar">
+  Stato: <span id="quoteStatus" class="status-pill">Bozza</span>
+  <div id="stockWarning" class="warning-box"></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Costi del lavoro</h2>
+
+<h3>Materiali</h3>
+<table>
+<thead><tr><th>Materiale</th><th>Q.tà</th><th>Unità</th><th>Costo</th><th>Totale</th><th></th></tr></thead>
+<tbody id="materials"></tbody>
+</table>
+<div class="actions"><button class="secondary" onclick="addMaterial()">+ Materiale</button></div>
+
+<h3 style="margin-top:22px">Bordatura</h3>
+<table>
+<thead><tr><th>Tipo bordo</th><th>Metri</th><th>€/m</th><th>Totale</th><th></th></tr></thead>
+<tbody id="edges"></tbody>
+</table>
+<div class="actions"><button class="secondary" onclick="addEdge()">+ Bordo</button></div>
+
+<h3 style="margin-top:22px">Ferramenta</h3>
+<table>
+<thead><tr><th>Ferramenta</th><th>Q.tà</th><th>Unità</th><th>Costo</th><th>Totale</th><th></th></tr></thead>
+<tbody id="hardware"></tbody>
+</table>
+<div class="actions"><button class="secondary" onclick="addHardware()">+ Ferramenta</button></div>
+
+<h3 style="margin-top:22px">Altre lavorazioni</h3>
+<table>
+<thead><tr><th style="width:42%">Descrizione</th><th>Q.tà</th><th>Prezzo</th><th>Totale</th><th></th></tr></thead>
+<tbody id="items"></tbody>
+</table>
+<div class="actions"><button class="secondary" onclick="addItem()">+ Lavorazione</button></div>
+
+<div class="profit-box"><strong>Prezzo di vendita e margine</strong><div class="profit-grid" style="margin-top:10px"><div><label>Ricarico %</label><input id="markup" type="number" min="0" step="1" value="30" oninput="calc()"></div><div class="kpi"><span>Utile stimato</span><strong id="profitTotal">€ 0,00</strong></div><div class="kpi"><span>Margine sul prezzo</span><strong id="marginPct">0%</strong></div></div><div class="muted" style="margin-top:8px">Il ricarico viene applicato ai costi prima dell’IVA.</div></div>
+<div class="totals">
+<div><span>Materiali</span><strong id="materialTotal">€ 0,00</strong></div>
+<div><span>Bordatura</span><strong id="edgeTotal">€ 0,00</strong></div>
+<div><span>Ferramenta</span><strong id="hardwareTotal">€ 0,00</strong></div>
+<div><span>Lavorazioni</span><strong id="workTotal">€ 0,00</strong></div>
+<div><span>Costo interno</span><strong id="subtotal">€ 0,00</strong></div><div><span>Prezzo vendita</span><strong id="saleSubtotal">€ 0,00</strong></div>
+<div><span>IVA</span><strong id="vatamount">€ 0,00</strong></div>
+<div class="total"><span>TOTALE</span><span id="grandtotal">€ 0,00</span></div>
+</div>
+</section>
+</div>
+</div>
+</div>
+
+<div id="warehouseView" style="display:none">
+<section class="card">
+<h2>Magazzino & Listino</h2><div class="muted">Prezzi base indicativi, modificabili. Le quantità e i prezzi personalizzati restano salvati sul dispositivo.</div>
+<div class="actions"><button class="primary" onclick="saveCatalog()">Salva magazzino</button><button class="secondary" onclick="resetCatalog()">Ripristina listino iniziale</button></div>
+<div class="inventory-grid" style="margin-top:16px">
+<div class="stock-card"><h4>Materiali</h4><table><thead><tr><th>Articolo</th><th>Scorta</th><th>Unità</th><th>€/unità</th><th></th></tr></thead><tbody id="catalogMaterials"></tbody></table><button class="secondary small" onclick="addCatalogMaterial()">+ materiale</button></div>
+<div class="stock-card"><h4>Bordi</h4><table><thead><tr><th>Articolo</th><th>Scorta</th><th>€/m</th><th></th></tr></thead><tbody id="catalogEdges"></tbody></table><button class="secondary small" onclick="addCatalogEdge()">+ bordo</button></div>
+<div class="stock-card"><h4>Ferramenta</h4><table><thead><tr><th>Articolo</th><th>Scorta</th><th>€/pz</th><th></th></tr></thead><tbody id="catalogHardware"></tbody></table><button class="secondary small" onclick="addCatalogHardware()">+ ferramenta</button></div>
+</div>
+<div class="log-box"><strong>Ultimo movimento magazzino</strong><div id="warehouseLog" style="margin-top:6px">Nessuno scarico registrato.</div></div>
+<p class="muted" style="margin-top:16px">Listino iniziale: valori indicativi ricavati da prezzi retail online italiani consultati a ottobre 2026. Formato, qualità, marca, quantità, IVA e trasporto possono cambiare sensibilmente il costo reale.</p>
+</section></div>
+<nav class="mobile-nav"><button id="mobileQuote" class="active" onclick="showView('quoteView')"><span>🧾</span><small>Preventivo</small></button><button id="mobileWarehouse" onclick="showView('warehouseView')"><span>📦</span><small>Magazzino</small></button></nav>
+
+<script>
+const eur = n => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
+let items = []; let materials = []; let edges = []; let hardware = []; let quoteAccepted=false; let inventoryUnloaded=false;
+const LABOR_PRICES={cnc:100,hardware:100,assembly:100,edging:1.50};
+
+const defaultCatalog={
+ materials:[
+  {name:'Nobilitato bianco 18 mm',stock:12,unit:'m²',price:14.88},
+  {name:'Schienale',stock:20,unit:'m²',price:12.22},
+  {name:'OSB 3 18 mm',stock:0,unit:'m²',price:22.99},
+  {name:'HDF / pannello rivestito 18 mm',stock:0,unit:'m²',price:31.90},
+  {name:'Multistrato betulla 18 mm',stock:0,unit:'m²',price:52.70}
+ ],
+ edges:[{name:'Bordo ABS 1 mm',stock:50,unit:'m',price:1.20},{name:'Bordo ABS 2 mm',stock:0,unit:'m',price:1.60}],
+ hardware:[{name:'Cerniera ammortizzata Ø35',stock:24,unit:'pz',price:2.50},{name:'Cerniera standard Ø35',stock:0,unit:'pz',price:1.50},{name:'Guide cassetto',stock:8,unit:'coppia',price:12.00},{name:'Maniglia',stock:20,unit:'pz',price:3.00},{name:'Piedino regolabile',stock:16,unit:'pz',price:1.50},{name:'Reggipiano',stock:40,unit:'pz',price:0.20}]
+};
+let catalog=JSON.parse(localStorage.getItem('preventivopro_catalog')||'null')||JSON.parse(JSON.stringify(defaultCatalog));
+function showView(v){document.getElementById('mobileQuote')?.classList.toggle('active',v==='quoteView');document.getElementById('mobileWarehouse')?.classList.toggle('active',v==='warehouseView');document.getElementById('quoteView').style.display=v==='quoteView'?'block':'none';document.getElementById('warehouseView').style.display=v==='warehouseView'?'block':'none';document.getElementById('tabQuote').classList.toggle('active',v==='quoteView');document.getElementById('tabWarehouse').classList.toggle('active',v==='warehouseView');if(v==='warehouseView')renderCatalog()}
+function renderCatalog(){
+ const rows=(arr,type)=>arr.map((x,i)=>`<tr><td><input value="${escapeHtml(x.name)}" oninput="catalog.${type}[${i}].name=this.value"></td><td><input type="number" min="0" step="0.01" value="${x.stock}" oninput="catalog.${type}[${i}].stock=parseFloat(this.value)||0"></td>${type==='materials'?`<td><input value="${escapeHtml(x.unit)}" oninput="catalog.${type}[${i}].unit=this.value"></td>`:''}<td><input type="number" min="0" step="0.01" value="${x.price}" oninput="catalog.${type}[${i}].price=parseFloat(this.value)||0"></td><td><button class="danger small" onclick="catalog.${type}.splice(${i},1);renderCatalog()">×</button></td></tr>`).join('');
+ catalogMaterials.innerHTML=rows(catalog.materials,'materials');catalogEdges.innerHTML=rows(catalog.edges,'edges');catalogHardware.innerHTML=rows(catalog.hardware,'hardware');
+}
+function addCatalogMaterial(){catalog.materials.push({name:'Nuovo materiale',stock:0,unit:'m²',price:0});renderCatalog()}
+function addCatalogEdge(){catalog.edges.push({name:'Nuovo bordo',stock:0,unit:'m',price:0});renderCatalog()}
+function addCatalogHardware(){catalog.hardware.push({name:'Nuova ferramenta',stock:0,unit:'pz',price:0});renderCatalog()}
+function saveCatalog(){localStorage.setItem('preventivopro_catalog',JSON.stringify(catalog));alert('Magazzino e listino salvati.')}
+function resetCatalog(){if(confirm('Ripristinare il listino iniziale?')){catalog=JSON.parse(JSON.stringify(defaultCatalog));saveCatalog();renderCatalog()}}
+function bestCatalogMatch(name,arr){const n=name.toLowerCase();let best=null,score=0;arr.forEach(x=>{let s=0;const words=x.name.toLowerCase().split(/\s+/).filter(w=>w.length>2);words.forEach(w=>{if(n.includes(w))s++});if(s>score){score=s;best=x}});return best}
+function applyCatalogPrices(){materials.forEach(x=>{const m=bestCatalogMatch(x.desc,catalog.materials);if(m){x.price=m.price;if(!x.unit||x.unit==='lotto')x.unit=m.unit}});edges.forEach(x=>{const m=bestCatalogMatch(x.desc,catalog.edges);if(m)x.price=m.price});hardware.forEach(x=>{const m=bestCatalogMatch(x.desc,catalog.hardware);if(m){x.price=m.price;x.unit=m.unit}});renderMaterials();renderEdges();renderHardware();document.getElementById('aiStatus').textContent+=' Prezzi compilati dal listino del magazzino.'}
+
+
+
+function numFrom(text, re, fallback=0){const m=text.match(re);return m?parseFloat(String(m[1]).replace(',','.')):fallback}
+function italianNumberValue(v){
+ const map={un:1,uno:1,una:1,due:2,tre:3,quattro:4,cinque:5,sei:6,sette:7,otto:8,nove:9,dieci:10};
+ const k=String(v||'').toLowerCase().trim();
+ return Object.prototype.hasOwnProperty.call(map,k)?map[k]:(parseFloat(k.replace(',','.'))||0);
+}
+function countItalian(text, singular, plural, fallback=0){
+ const nums='(\\d+(?:[.,]\\d+)?|un|uno|una|due|tre|quattro|cinque|sei|sette|otto|nove|dieci)';
+ const re=new RegExp(nums+'\\s*(?:'+plural+'|'+singular+')\\b','i');
+ const m=text.match(re);
+ if(m)return italianNumberValue(m[1]);
+ return new RegExp('\\b(?:'+singular+'|'+plural+')\\b','i').test(text)?Math.max(1,fallback):0;
+}
+
+function extractDimensionsCm(text){
+ const t=String(text||'').toLowerCase().replace(/×/g,'x');
+ let m=t.match(/(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)\s*(cm|mm|m)?/i);
+ if(!m)return null;
+ let a=parseFloat(m[1].replace(',','.')), b=parseFloat(m[2].replace(',','.')), c=parseFloat(m[3].replace(',','.'));
+ const u=(m[4]||'cm').toLowerCase();
+ const f=u==='mm'?0.1:(u==='m'?100:1);
+ return {w:a*f,h:b*f,d:c*f};
+}
+function hingeCountForDoorHeight(h){
+ if(h<=90)return 2;
+ if(h<=150)return 3;
+ if(h<=200)return 4;
+ return 5;
+}
+function inferFurnitureBOM(text){
+ const t=String(text||'').toLowerCase();
+ const d=extractDimensionsCm(t);
+ const doors=countItalian(t,'anta','ante',0);
+ const drawers=countItalian(t,'cassetto','cassetti',0);
+ const shelves=countItalian(t,'ripiano','ripiani',0);
+ const material=t.includes('rovere')?'Rovere':(t.includes('mdf')?'MDF':(t.includes('multistrato')?'Multistrato':(t.includes('osb')?'OSB':'Nobilitato bianco 18 mm')));
+ let panelArea=0, backArea=0, edgeM=0, hinges=0;
+ if(d){
+   const W=d.w/100,H=d.h/100,D=d.d/100;
+   // carcassa: 2 fianchi + top/fondo + ripiani. Schienale calcolato separatamente.
+   panelArea = 2*H*D + 2*W*D + shelves*W*D;
+   backArea = W*H*1.08; // 8% sfrido schienale
+   // ante frontali
+   if(doors) panelArea += W*H;
+   // cassetti: frontali + fondo + 4 sponde semplificate per cassetto
+   if(drawers){
+     const dh=Math.min(H/(drawers+1),0.30);
+     panelArea += drawers*(W*dh + W*D + 2*D*dh + 2*W*dh);
+   }
+   // 12% sfrido
+   panelArea*=1.12;
+   // bordo visibile stimato: ante perimetro + frontali cassetti + frontale ripiani/top
+   if(doors) edgeM += 2*(W+H);
+   if(drawers){const dh=Math.min(H/(drawers+1),0.30); edgeM += drawers*2*(W+dh);}
+   edgeM += shelves*W + W;
+   hinges=doors*hingeCountForDoorHeight(H*100);
+ } else {
+   // fallback prudente quando mancano dimensioni
+   panelArea=(doors*1.2)+(drawers*0.8)+(shelves*0.5);
+   backArea=1.5;
+   edgeM=doors*4+drawers*2.5+shelves;
+   hinges=doors*2;
+ }
+ return {
+   dims:d,doors,drawers,shelves,material,
+   panelArea:+panelArea.toFixed(2),backArea:+backArea.toFixed(2),edgeM:+edgeM.toFixed(2),hinges,
+   guides:drawers,handles:doors+drawers,shelfSupports:shelves*4
+ };
+}
+function loadSmartSimulation(){
+ // Reset demo warehouse to make the unloading simulation deterministic.
+ const ensure=(arr,name,stock,unit,price)=>{
+   let x=arr.find(v=>v.name===name);
+   if(!x){x={name,stock,unit,price};arr.push(x)} else {x.stock=stock;x.unit=unit;x.price=price}
+ };
+ ensure(catalog.materials,'Nobilitato bianco 18 mm',20,'m²',14.88);
+ ensure(catalog.materials,'Schienale',20,'m²',12.22);
+ ensure(catalog.edges,'Bordo ABS 1 mm',60,'m',1.20);
+ ensure(catalog.hardware,'Cerniera ammortizzata Ø35',30,'pz',2.50);
+ ensure(catalog.hardware,'Guide cassetto',10,'coppia',12.00);
+ ensure(catalog.hardware,'Maniglia',20,'pz',3.00);
+  ensure(catalog.hardware,'Reggipiano',40,'pz',0.20);
+ localStorage.setItem('preventivopro_catalog',JSON.stringify(catalog));
+
+ client.value='Cliente Simulazione AI';
+ number.value='AI-SIM-001'; date.value=new Date().toISOString().slice(0,10);
+ description.value='Mobile soggiorno 180x120x45 cm in nobilitato bianco 18 mm, con due ante, due cassetti e due ripiani, cerniere ammortizzate, bordo ABS 1 mm e maniglie.';
+ runSmartFurnitureAI();
+}
+function runSmartFurnitureAI(){
+ const bom=inferFurnitureBOM(description.value);
+ const matName=catalog.materials.some(x=>normalizeName(x.name).includes(normalizeName(bom.material)))?bom.material:'Nobilitato bianco 18 mm';
+ materials=[
+   {desc:matName,qty:bom.panelArea,unit:'m²',price:0},
+   {desc:'Schienale',qty:bom.backArea,unit:'m²',price:12.22}
+ ];
+ edges=[{desc:'Bordo ABS 1 mm',qty:bom.edgeM,price:0}];
+ hardware=[];
+ if(bom.hinges)hardware.push({desc:'Cerniera ammortizzata Ø35',qty:bom.hinges,unit:'pz',price:0});
+ if(bom.guides)hardware.push({desc:'Guide cassetto',qty:bom.guides,unit:'coppia',price:0});
+ if(bom.handles)hardware.push({desc:'Maniglia',qty:bom.handles,unit:'pz',price:0});
+  if(bom.shelfSupports)hardware.push({desc:'Reggipiano',qty:bom.shelfSupports,unit:'pz',price:0});
+ items=[
+   {desc:'Taglio e lavorazione CNC',qty:1,price:LABOR_PRICES.cnc},
+   {desc:'Bordatura',qty:bom.edgeM,price:LABOR_PRICES.edging},
+   {desc:'Foratura e montaggio ferramenta',qty:1,price:LABOR_PRICES.hardware},
+   {desc:'Assemblaggio mobile',qty:1,price:LABOR_PRICES.assembly}
+ ];
+ applyCatalogPrices();
+ quoteAccepted=false;inventoryUnloaded=false;setQuoteStatus();
+ renderMaterials();renderEdges();renderHardware();renderItems();renderCatalog();
+ const d=bom.dims?`${bom.dims.w}×${bom.dims.h}×${bom.dims.d} cm`:'non rilevate';
+ const hingeRule=bom.doors?`${bom.doors} ante × ${hingeCountForDoorHeight(bom.dims?bom.dims.h:80)} cerniere/anta`:'nessuna anta';
+ const el=document.getElementById('smartBom');
+ el.style.display='block';
+ el.innerHTML=`<strong>Distinta base stimata dall’AI</strong><br>
+ Dimensioni rilevate: ${d}<br>
+ Pannelli: <strong>${bom.panelArea} m²</strong> (stima comprensiva di 12% di sfrido)<br>
+ Schienale: <strong>${bom.backArea} m²</strong> a €12,22/m²<br>
+ Bordo ABS: <strong>${bom.edgeM} m</strong><br>
+ Cerniere: <strong>${bom.hinges} pz</strong> (${hingeRule})<br>
+ Guide: <strong>${bom.guides} coppie</strong> (${bom.drawers} cassetti)<br>
+ Maniglie: <strong>${bom.handles} pz</strong> (${bom.doors} ante + ${bom.drawers} cassetti)<br>
+  Reggipiani: <strong>${bom.shelfSupports} pz</strong> (${bom.shelves} ripiani × 4)<br>
+ Lavorazioni: <strong>CNC €100 + foratura/montaggio €100 + assemblaggio €100</strong><br>
+ <span class="muted">È una distinta base estimativa: prima della produzione va verificata rispetto a costruzione, spessori, ferramenta scelta e schema di taglio.</span>`;
+ document.getElementById('aiStatus').textContent='AI: distinta base generata dalla sola descrizione. Ora puoi verificare il magazzino e premere “Accetta & scarica magazzino”.';
+}
+
+function aiCompleteQuote(){
+ const raw=document.getElementById('description').value.trim();
+ const status=document.getElementById('aiStatus');
+ if(!raw){status.textContent='Inserisci prima una descrizione del lavoro.';return}
+ const t=raw.toLowerCase();
+ let nm=[],ne=[],nh=[],ni=[];
+ const dims=t.match(/(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)(?:\s*[x×]\s*(\d+(?:[.,]\d+)?))?/);
+ let w=0,h=0,d=0;
+ if(dims){w=parseFloat(dims[1].replace(',','.'));h=parseFloat(dims[2].replace(',','.'));d=dims[3]?parseFloat(dims[3].replace(',','.')):0; if(w>10){w/=100} if(h>10){h/=100} if(d>10){d/=100}}
+ let doors=countItalian(t,'anta','ante',1);
+ let drawers=countItalian(t,'cassetto','cassetti',1);
+ let shelves=countItalian(t,'ripiano','ripiani',1);
+ // Se il numero di cerniere è scritto esplicitamente, lo rispettiamo.
+ // Altrimenti stimiamo la ferramenta in base alle ante.
+ let explicitHinges=countItalian(t,'cerniera','cerniere',0);
+ let hinges=explicitHinges || (doors?doors*2:0);
+ const material = t.includes('rovere')?'Rovere / pannello impiallacciato':t.includes('multistrato')?'Multistrato':t.includes('mdf')?'MDF':t.includes('laminato')?'Pannello laminato':t.includes('truciolare')?'Truciolare nobilitato':'Pannello da definire';
+ let area=0;
+ if(w&&h){ area=w*h; if(d){area += 2*h*d + 2*w*d;} if(doors) area += w*h; if(shelves&&d) area += shelves*w*d; area=Math.max(area*1.12,1); }
+ nm.push({desc:material,qty:area?+area.toFixed(2):1,unit:area?'m²':'lotto',price:0});
+ if(t.includes('schienale') || (w&&h)) nm.push({desc:'Schienale',qty:w&&h?+(w*h).toFixed(2):1,unit:w&&h?'m²':'pz',price:0});
+ let edgeMeters=numFrom(t,/(\d+(?:[.,]\d+)?)\s*(?:m|metri)\s*(?:di\s*)?(?:bordo|bordatura)/,0);
+ if(!edgeMeters && w&&h) edgeMeters=+(2*(w+h)+(shelves?w*shelves:0)).toFixed(2);
+ if(t.includes('bord') || edgeMeters) ne.push({desc:t.includes('abs')?'Bordo ABS':'Bordo da definire',qty:edgeMeters||1,price:0});
+ if(hinges) nh.push({desc:t.includes('soft')||t.includes('ammort')?'Cerniera ammortizzata Ø35':'Cerniera standard Ø35',qty:hinges,unit:'pz',price:0});
+ if(drawers) nh.push({desc:'Guide cassetto',qty:drawers,unit:'coppia',price:0});
+ if(doors) nh.push({desc:'Maniglia / apertura anta',qty:doors,unit:'pz',price:0});
+ if(t.includes('pied')||t.includes('zoccolo')) nh.push({desc:'Piedini / zoccolo',qty:4,unit:'pz',price:0});
+ ni.push({desc:'Taglio e lavorazione CNC',qty:1,price:LABOR_PRICES.cnc});
+ if(ne.length) ni.push({desc:'Bordatura',qty:edgeMeters||1,price:LABOR_PRICES.edging});
+ if(doors||drawers||nh.length) ni.push({desc:'Foratura e montaggio ferramenta',qty:1,price:LABOR_PRICES.hardware});
+ ni.push({desc:'Assemblaggio mobile',qty:1,price:LABOR_PRICES.assembly});
+ if(t.includes('montaggio')||t.includes('installazione')||t.includes('posa')) ni.push({desc:'Trasporto e posa',qty:1,price:0});
+ materials=nm; edges=ne; hardware=nh; // Lavorazioni standard con prezzi di default
+ if(!ni.some(x=>/taglio|cnc/i.test(x.desc))) ni.push({desc:'Taglio e lavorazione CNC',qty:1,price:LABOR_PRICES.cnc});
+ if(!ni.some(x=>/foratura.*ferramenta|montaggio ferramenta/i.test(x.desc))) ni.push({desc:'Foratura e montaggio ferramenta',qty:1,price:LABOR_PRICES.hardware});
+ if(!ni.some(x=>/assemblaggio/i.test(x.desc))) ni.push({desc:'Assemblaggio mobile',qty:1,price:LABOR_PRICES.assembly});
+ items=ni;
+ renderMaterials();renderEdges();renderHardware();renderItems();
+ const missing=[]; if(!dims)missing.push('dimensioni'); if(material==='Pannello da definire')missing.push('materiale');
+ const inferred=[]; if(doors)inferred.push(`${doors} ante → ${hinges} cerniere`); if(drawers)inferred.push(`${drawers} cassetti → ${drawers} coppie di guide`);
+ status.textContent='Bozza generata. '+(inferred.length?'Calcoli: '+inferred.join(' • ')+'. ':'')+(missing.length?'Da specificare: '+missing.join(', ')+'. ':''); applyCatalogPrices();
+}
+function clearGenerated(){materials=[];edges=[];hardware=[];items=[];addMaterial();addEdge();addHardware();addItem();document.getElementById('aiStatus').textContent='Voci svuotate.'}
+
+function addMaterial(desc='',qty=1,unit='pz',price=0){materials.push({desc,qty,unit,price});renderMaterials()}
+function addEdge(desc='',qty=1,price=0){edges.push({desc,qty,price});renderEdges()}
+function addHardware(desc='',qty=1,unit='pz',price=0){hardware.push({desc,qty,unit,price});renderHardware()}
+
+function renderMaterials(){
+ const tbody=document.getElementById('materials'); tbody.innerHTML='';
+ materials.forEach((it,i)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeHtml(it.desc)}" oninput="materials[${i}].desc=this.value"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.qty}" oninput="materials[${i}].qty=parseFloat(this.value)||0;calc()"></td>
+  <td><input value="${escapeHtml(it.unit)}" oninput="materials[${i}].unit=this.value"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.price}" oninput="materials[${i}].price=parseFloat(this.value)||0;calc()"></td>
+  <td id="mat${i}">${eur(it.qty*it.price)}</td>
+  <td><button class="danger" onclick="materials.splice(${i},1);renderMaterials()">×</button></td>`;
+  tbody.appendChild(tr);
+ }); calc();
+}
+function renderEdges(){
+ const tbody=document.getElementById('edges'); tbody.innerHTML='';
+ edges.forEach((it,i)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeHtml(it.desc)}" placeholder="ABS 1 mm" oninput="edges[${i}].desc=this.value"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.qty}" oninput="edges[${i}].qty=parseFloat(this.value)||0;calc()"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.price}" oninput="edges[${i}].price=parseFloat(this.value)||0;calc()"></td>
+  <td id="edge${i}">${eur(it.qty*it.price)}</td>
+  <td><button class="danger" onclick="edges.splice(${i},1);renderEdges()">×</button></td>`;
+  tbody.appendChild(tr);
+ }); calc();
+}
+function renderHardware(){
+ const tbody=document.getElementById('hardware'); tbody.innerHTML='';
+ hardware.forEach((it,i)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeHtml(it.desc)}" oninput="hardware[${i}].desc=this.value"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.qty}" oninput="hardware[${i}].qty=parseFloat(this.value)||0;calc()"></td>
+  <td><input value="${escapeHtml(it.unit)}" oninput="hardware[${i}].unit=this.value"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.price}" oninput="hardware[${i}].price=parseFloat(this.value)||0;calc()"></td>
+  <td id="hard${i}">${eur(it.qty*it.price)}</td>
+  <td><button class="danger" onclick="hardware.splice(${i},1);renderHardware()">×</button></td>`;
+  tbody.appendChild(tr);
+ }); calc();
+}
+
+function addItem(desc='',qty=1,price=0){
+ items.push({desc,qty,price}); renderItems();
+}
+function renderItems(){
+ const tbody=document.getElementById('items'); tbody.innerHTML='';
+ items.forEach((it,i)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeHtml(it.desc)}" oninput="items[${i}].desc=this.value"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.qty}" oninput="items[${i}].qty=parseFloat(this.value)||0;calc()"></td>
+  <td><input type="number" min="0" step="0.01" value="${it.price}" oninput="items[${i}].price=parseFloat(this.value)||0;calc()"></td>
+  <td id="line${i}">${eur(it.qty*it.price)}</td>
+  <td><button class="danger" onclick="items.splice(${i},1);renderItems()">×</button></td>`;
+  tbody.appendChild(tr);
+ });
+ calc();
+}
+function escapeHtml(s){return String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function calc(){
+ let mt=materials.reduce((a,x)=>a+(x.qty||0)*(x.price||0),0);
+ let et=edges.reduce((a,x)=>a+(x.qty||0)*(x.price||0),0);
+ let ht=hardware.reduce((a,x)=>a+(x.qty||0)*(x.price||0),0);
+ let wt=items.reduce((a,x)=>a+(x.qty||0)*(x.price||0),0);
+ let sub=mt+et+ht+wt;
+ let markupv=parseFloat(document.getElementById('markup')?.value)||0;
+  let saleSub=sub*(1+markupv/100);
+  let profit=saleSub-sub;
+  let vatv=saleSub*(parseFloat(document.getElementById('vat').value)||0)/100;
+ document.getElementById('materialTotal').textContent=eur(mt);
+ document.getElementById('edgeTotal').textContent=eur(et);
+ document.getElementById('hardwareTotal').textContent=eur(ht);
+ document.getElementById('workTotal').textContent=eur(wt);
+ document.getElementById('subtotal').textContent=eur(sub);
+ document.getElementById('vatamount').textContent=eur(vatv);
+ document.getElementById('grandtotal').textContent=eur(sub+vatv);
+ materials.forEach((x,i)=>{let e=document.getElementById('mat'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
+ edges.forEach((x,i)=>{let e=document.getElementById('edge'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
+ hardware.forEach((x,i)=>{let e=document.getElementById('hard'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
+ items.forEach((x,i)=>{let e=document.getElementById('line'+i);if(e)e.textContent=eur((x.qty||0)*(x.price||0))});
+}
+document.getElementById('vat').addEventListener('change',calc);
+
+
+function normalizeName(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function inventoryMatch(desc, arr){
+ const d=normalizeName(desc);
+ if(!d)return null;
+ let best=null,score=0;
+ arr.forEach(x=>{
+   const n=normalizeName(x.name);
+   let s=0;
+   n.split(' ').filter(w=>w.length>2).forEach(w=>{if(d.includes(w))s++});
+   if(d.includes(n)||n.includes(d))s+=5;
+   if(s>score){score=s;best=x}
+ });
+ return score>0?best:null;
+}
+function setQuoteStatus(){
+ const el=document.getElementById('quoteStatus');
+ if(!el)return;
+ el.textContent=quoteAccepted?'Accettato':'Bozza';
+ el.classList.toggle('accepted',quoteAccepted);
+}
+function stockRequirements(){
+ const req=[];
+ materials.forEach(x=>{if((x.qty||0)>0){const m=inventoryMatch(x.desc,catalog.materials);req.push({kind:'Materiale',desc:x.desc,qty:+x.qty,match:m})}});
+ edges.forEach(x=>{if((x.qty||0)>0){const m=inventoryMatch(x.desc,catalog.edges);req.push({kind:'Bordo',desc:x.desc,qty:+x.qty,match:m})}});
+ hardware.forEach(x=>{if((x.qty||0)>0){const m=inventoryMatch(x.desc,catalog.hardware);req.push({kind:'Ferramenta',desc:x.desc,qty:+x.qty,match:m})}});
+ return req;
+}
+function acceptAndUnload(){
+ if(inventoryUnloaded){alert('Questo preventivo ha già scaricato il magazzino. Nessun doppio scarico eseguito.');return}
+ const req=stockRequirements();
+ const missing=req.filter(r=>!r.match);
+ const insufficient=req.filter(r=>r.match && r.match.stock<r.qty);
+ const warn=document.getElementById('stockWarning');
+ if(missing.length||insufficient.length){
+   const parts=[];
+   if(missing.length)parts.push('Articoli non trovati: '+missing.map(x=>x.desc).join(', '));
+   if(insufficient.length)parts.push('Scorta insufficiente: '+insufficient.map(x=>`${x.match.name} (richiesti ${x.qty}, disponibili ${x.match.stock})`).join(', '));
+   warn.style.display='block';warn.textContent=parts.join(' • ');
+   alert('Scarico bloccato: controlla il magazzino.');
+   return;
+ }
+ const lines=[];
+ req.forEach(r=>{
+   const before=+r.match.stock;
+   r.match.stock=+(before-r.qty).toFixed(2);
+   lines.push(`${r.kind}: ${r.match.name}  ${before} → ${r.match.stock}  (-${r.qty} ${r.match.unit||''})`);
+ });
+ quoteAccepted=true;inventoryUnloaded=true;setQuoteStatus();
+ warn.style.display='none';
+ const log=`Preventivo ${number.value || ''} — ${new Date().toLocaleString('it-IT')}\n`+lines.join('\n');
+ localStorage.setItem('preventivopro_warehouse_log',log);
+ localStorage.setItem('preventivopro_catalog',JSON.stringify(catalog));
+ saveQuote();
+ renderCatalog();renderWarehouseLog();
+ alert('Preventivo accettato e magazzino scaricato correttamente.');
+}
+function renderWarehouseLog(){
+ const el=document.getElementById('warehouseLog');
+ if(el)el.textContent=localStorage.getItem('preventivopro_warehouse_log')||'Nessuno scarico registrato.';
+}
+function loadSimulation(){
+ // Ripristina scorte demo note per rendere la prova ripetibile.
+ const ensure=(arr,name,stock)=>{const x=arr.find(v=>v.name===name);if(x)x.stock=stock};
+ ensure(catalog.materials,'Nobilitato bianco 18 mm',12);
+ ensure(catalog.edges,'Bordo ABS 1 mm',50);
+ ensure(catalog.hardware,'Cerniera ammortizzata Ø35',24);
+ ensure(catalog.hardware,'Guide cassetto',8);
+ localStorage.setItem('preventivopro_catalog',JSON.stringify(catalog));
+ client.value='Cliente Demo';
+ phone.value='';email.value='';address.value='';
+ number.value='SIM-001';date.value=new Date().toISOString().slice(0,10);
+ description.value='Mobile contenitore 120x80x45 cm in nobilitato bianco 18 mm, 2 ante, 4 cerniere ammortizzate, bordo ABS 1 mm e 1 cassetto.';
+ materials=[{desc:'Nobilitato bianco 18 mm',qty:4.2,unit:'m²',price:14.88}];
+ edges=[{desc:'Bordo ABS 1 mm',qty:8.5,price:1.20}];
+ hardware=[{desc:'Cerniera ammortizzata Ø35',qty:4,unit:'pz',price:2.50},{desc:'Guide cassetto',qty:1,unit:'coppia',price:12}];
+ items=[{desc:'Taglio e lavorazione CNC',qty:1,price:LABOR_PRICES.cnc},{desc:'Bordatura',qty:8.5,price:LABOR_PRICES.edging},{desc:'Foratura e montaggio ferramenta',qty:1,price:LABOR_PRICES.hardware},{desc:'Assemblaggio mobile',qty:1,price:LABOR_PRICES.assembly}];
+ quoteAccepted=false;inventoryUnloaded=false;setQuoteStatus();
+ document.getElementById('stockWarning').style.display='none';
+ renderMaterials();renderEdges();renderHardware();renderItems();renderCatalog();
+ document.getElementById('aiStatus').textContent='Simulazione caricata. Apri Magazzino per vedere le scorte iniziali, poi torna qui e premi “Accetta & scarica magazzino”.';
+ alert('Simulazione pronta: scorte demo ripristinate e preventivo compilato.');
+}
+
+function newQuote(){
+ quoteAccepted=false; inventoryUnloaded=false; setQuoteStatus();
+ items=[]; materials=[]; edges=[]; hardware=[]; addMaterial(); addEdge(); addHardware(); addItem(''); 
+ document.getElementById('client').value='';
+ document.getElementById('phone').value='';
+ document.getElementById('email').value='';
+ document.getElementById('address').value='';
+ document.getElementById('description').value='';document.getElementById('smartBom').style.display='none';
+ document.getElementById('date').value=new Date().toISOString().slice(0,10);
+ document.getElementById('number').value='PRE-'+Date.now().toString().slice(-6);
+ calc();
+}
+function data(){
+ return {client:client.value,phone:phone.value,email:email.value,address:address.value,
+ number:number.value,date:date.value,description:description.value,vat:vat.value,markup:document.getElementById('markup').value,items,materials,edges,hardware,quoteAccepted,inventoryUnloaded};
+}
+function saveQuote(){
+ localStorage.setItem('preventivopro_last',JSON.stringify(data()));
+ alert('Preventivo salvato su questo dispositivo.');
+}
+function loadLast(){
+ const d=JSON.parse(localStorage.getItem('preventivopro_last')||'null');
+ if(!d){alert('Nessun preventivo salvato.');return}
+ client.value=d.client||'';phone.value=d.phone||'';email.value=d.email||'';address.value=d.address||'';
+ number.value=d.number||'';date.value=d.date||'';description.value=d.description||'';vat.value=d.vat||22;document.getElementById('markup').value=d.markup??30;
+ items=d.items||[]; materials=d.materials||[]; edges=d.edges||[]; hardware=d.hardware||[]; quoteAccepted=!!d.quoteAccepted; inventoryUnloaded=!!d.inventoryUnloaded; setQuoteStatus(); renderMaterials(); renderEdges(); renderHardware(); renderItems();
+}
+renderCatalog();
+renderWarehouseLog();
+newQuote();
+
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;document.getElementById('installBanner').style.display='flex'});
+document.getElementById('installBtn')?.addEventListener('click',async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;document.getElementById('installBanner').style.display='none'});
+window.addEventListener('appinstalled',()=>document.getElementById('installBanner').style.display='none');
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
+</script>
+</body>
+</html>
